@@ -1,22 +1,24 @@
 
 package ch.hearc.mapeditorraycasting.gui.mainwindow;
 
-import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JColorChooser;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import ch.hearc.mapeditorraycasting.gui.thingdialog.JFrameColorInfoEditor;
 import ch.hearc.mapeditorraycasting.resources.ColorInfo;
 
+/**
+ * Interface permettant de créer et placer des monstres ou des murs sur la map
+ * Fait la correspondance entre une couleur et un objet en jeu.
+ *
+ * @author Maxime Piergiovanni
+ */
 public class JPanelMonsterPicker extends JPanel
 	{
 
@@ -29,20 +31,7 @@ public class JPanelMonsterPicker extends JPanel
 		parent = _parent;
 		geometry();
 		control();
-		appearance();
 		}
-
-	/*------------------------------------------------------------------*\
-	|*							Methodes Public							*|
-	\*------------------------------------------------------------------*/
-
-	/*------------------------------*\
-	|*				Set				*|
-	\*------------------------------*/
-
-	/*------------------------------*\
-	|*				Get				*|
-	\*------------------------------*/
 
 	/*------------------------------------------------------------------*\
 	|*							Methodes Private						*|
@@ -51,53 +40,39 @@ public class JPanelMonsterPicker extends JPanel
 	private void geometry()
 		{
 		// JComponent : Instanciation
-		colorPick = new JButton("Pick a color");
 		addMonster = new JButton("Add");
 		editMonster = new JButton("Edit");
 		removeMonster = new JButton("Remove");
 
-		monsterList = new JList<ColorInfo>(parent.listModel);
+		monsterList = new JList<ColorInfo>(parent.listThings);
+		monsterList.setVisibleRowCount(5);
 		monsterList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		monsterList.setLayoutOrientation(JList.VERTICAL);
+		monsterList.setSelectedIndex(0);
+		scrollPanel = new JScrollPane(monsterList);
+
 		// Layout : Specification
 			{
 			FlowLayout flowlayout = new FlowLayout(FlowLayout.CENTER);
 			setLayout(flowlayout);
-
-			// flowlayout.setHgap(20);
-			// flowlayout.setVgap(20);
 			}
 
 		// JComponent : add
-		add(colorPick);
-		add(monsterList);
-		add(addMonster);
-		add(editMonster);
-		add(removeMonster);
+		add(scrollPanel);
 		}
 
 	private void control()
 		{
-		colorPick.addActionListener(new ActionListener()
-			{
-
-			@Override
-			public void actionPerformed(ActionEvent e)
-				{
-				Color color = JColorChooser.showDialog(JPanelMonsterPicker.this, "ColorPicker", Color.WHITE);
-				parent.setColor(color);
-				}
-			});
-
+		/*
 		addMonster.addActionListener(new ActionListener()
 			{
 
 			@Override
 			public void actionPerformed(ActionEvent e)
 				{
-				ColorInfo clean = new ColorInfo("null", Color.BLACK, "wall", "Empty");
-				new JFrameColorInfoEditor(clean);
-				parent.listModel.addElement(clean);
+				ColorInfo clean = new ColorInfo("null", Color.BLACK, "Empty");
+				new JFrameTextureInfoEditor(clean);
+				parent.listThings.addElement(clean);
 				}
 			});
 
@@ -107,7 +82,7 @@ public class JPanelMonsterPicker extends JPanel
 			@Override
 			public void actionPerformed(ActionEvent e)
 				{
-				new JFrameColorInfoEditor(monsterList.getSelectedValue());
+				new JFrameTextureInfoEditor(monsterList.getSelectedValue());
 				}
 			});
 
@@ -118,10 +93,10 @@ public class JPanelMonsterPicker extends JPanel
 			public void actionPerformed(ActionEvent e)
 				{
 				int index = monsterList.getSelectedIndex();
-				parent.listModel.removeElementAt(index);
+				parent.listThings.removeElementAt(index);
 				}
 			});
-
+		*/
 		monsterList.addListSelectionListener(new ListSelectionListener()
 			{
 
@@ -133,7 +108,6 @@ public class JPanelMonsterPicker extends JPanel
 					if (monsterList.getSelectedIndex() != -1)
 						{
 						ColorInfo current = monsterList.getSelectedValue();
-						System.out.println("Picked a " + current.ressources);
 						parent.setColor(current.color);
 						}
 					}
@@ -141,20 +115,15 @@ public class JPanelMonsterPicker extends JPanel
 			});
 		}
 
-	private void appearance()
-		{
-		// rien
-		}
-
 	/*------------------------------------------------------------------*\
 	|*							Attributs Private						*|
 	\*------------------------------------------------------------------*/
 
 	// Tools
-	private JButton colorPick;
 	private JFrameMainWindow parent;
 
 	private JList<ColorInfo> monsterList;
+	private JScrollPane scrollPanel;
 	private JButton addMonster;
 	private JButton editMonster;
 	private JButton removeMonster;

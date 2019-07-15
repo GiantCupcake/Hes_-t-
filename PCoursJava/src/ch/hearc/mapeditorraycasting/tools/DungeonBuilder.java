@@ -6,6 +6,13 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
+/**
+ * Permet de créer un donjon selon les paramètres envoyés au constructeur
+ * Algorithme de génération trouvé sur internet :
+ * http://www.roguebasin.com/index.php?title=Dungeon-Building_Algorithm
+ *
+ * @author Maxime Piergiovanni
+ */
 public class DungeonBuilder
 	{
 
@@ -70,7 +77,7 @@ public class DungeonBuilder
 		int roomWidth = dice.nextInt(maxRoomWidth - minRoomWidth) + minRoomWidth;
 
 		checkSpace(width / 2 - roomWidth / 2, height / 2 - roomHeight / 2, width / 2 - roomWidth / 2 + roomWidth, height / 2 - roomHeight / 2 + roomHeight);
-
+		nbFeatures++;
 		}
 
 	private boolean digRoom(int x, int y, char dir)
@@ -247,14 +254,42 @@ public class DungeonBuilder
 			}
 		}
 
-	private int randomHeight()
+	/**
+	 * Permet de créer une salle vide d'une taille donnée.
+	 */
+	public static BufferedImage generateVoid(int w, int h)
 		{
-		return dice.nextInt(maxRoomHeight - minRoomHeight) + minRoomHeight;
-		}
+		BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+		int x, y;
 
-	private int randomWidth()
-		{
-		return dice.nextInt(maxRoomWidth - minRoomWidth) + minRoomWidth;
+		for(x = 0; x < w; x++)
+			{
+			for(y = 0; y < h; y++)
+				{
+				img.setRGB(x, y, Color.WHITE.getRGB());
+				}
+			}
+
+		for(x = 0, y = 0; x < w; x++)
+			{
+			img.setRGB(x, y, Color.BLACK.getRGB());
+			}
+		x = w - 1;
+		for(; y < h; y++)
+			{
+			img.setRGB(x, y, Color.BLACK.getRGB());
+			}
+		y = h - 1;
+		for(; x > 0; x--)
+			{
+			img.setRGB(x, y, Color.BLACK.getRGB());
+			}
+		for(; y > 0; y--)
+			{
+			img.setRGB(x, y, Color.BLACK.getRGB());
+			}
+
+		return img;
 		}
 
 	/*------------------------------------------------------------------*\
@@ -275,7 +310,7 @@ public class DungeonBuilder
 	private int nbFeatures;
 	private final int askedFeatures;
 
-	private static final int MAXSIZECONST = 4;
+	private static final int MAXSIZECONST = 7;
 	private static final int MINSIZECONST = 10;
 	private static final int AVAILABLEFEATURES = 2;
 	}

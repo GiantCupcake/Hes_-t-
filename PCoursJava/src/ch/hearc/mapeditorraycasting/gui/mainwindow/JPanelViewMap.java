@@ -1,6 +1,8 @@
 
 package ch.hearc.mapeditorraycasting.gui.mainwindow;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
@@ -10,6 +12,11 @@ import java.awt.geom.AffineTransform;
 
 import javax.swing.JPanel;
 
+/**
+ * Permet de visionner la map ainsi que de dessiner dessus.
+ *
+ * @author maxpi
+ */
 public class JPanelViewMap extends JPanel
 	{
 
@@ -20,9 +27,6 @@ public class JPanelViewMap extends JPanel
 	public JPanelViewMap(JFrameMainWindow _parent)
 		{
 		parent = _parent;
-		//Par défaut Black.
-		pressed = false;
-		geometry();
 		control();
 		appearance();
 		}
@@ -41,60 +45,40 @@ public class JPanelViewMap extends JPanel
 		g2d.setTransform(oldContext);
 		}
 
-	/*------------------------------*\
-	|*				Set				*|
-	\*------------------------------*/
-
-
-	/*------------------------------*\
-	|*				Get				*|
-	\*------------------------------*/
-
 	/*------------------------------------------------------------------*\
 	|*							Methodes Private						*|
 	\*------------------------------------------------------------------*/
 
-
-
 	private void draw(Graphics2D g2d)
 		{
-		float h = parent.map.getHeight();
-		float w = parent.map.getWidth();
+		float h = parent.mapRattco.map.getHeight();
+		float w = parent.mapRattco.map.getWidth();
 		g2d.scale(getWidth() / w, getHeight() / h);
-		g2d.drawImage(parent.map, 0, 0, null);
-		}
-
-	private void geometry()
-		{
-
+		g2d.drawImage(parent.mapRattco.map, 0, 0, null);
 		}
 
 	private void control()
 		{
-		// Quand on clique sur l'image, le pixel doit être coloré.
+		// Quand on clique sur l'image, le pixel doit se colorer.
 		addMouseListener(new MouseAdapter()
 			{
 
 			@Override
 			public void mousePressed(MouseEvent e)
 				{
-				pressed = true;
-				int mapH = parent.map.getHeight();
-				int mapW = parent.map.getWidth();
+				int mapH = parent.mapRattco.map.getHeight();
+				int mapW = parent.mapRattco.map.getWidth();
 				float fx = e.getX() / (float)getWidth();
 				float fy = e.getY() / (float)getHeight();
 				int x = (int)(fx * mapW);
 				int y = (int)(fy * mapH);
 
-				//On colorie
-				parent.map.setRGB(x, y, parent.currentColor.getRGB());
-				repaint();
-				}
+				//On colorie, un mur noir ne peut être remplacé que par du blanc
+				if (parent.mapRattco.map.getRGB(x, y) == Color.BLACK.getRGB() && parent.currentColor.getRGB() != Color.white.getRGB()) { return; }
+				parent.mapRattco.setRGBMap(x, y, parent.currentColor.getRGB());
 
-			@Override
-			public void mouseReleased(MouseEvent e)
-				{
-				pressed = false;
+				repaint();
+				parent.frameTextureEditor.panelViewMap.repaint();
 				}
 
 			});
@@ -102,27 +86,29 @@ public class JPanelViewMap extends JPanel
 		addMouseMotionListener(new MouseMotionAdapter()
 			{
 
-
 			@Override
 			public void mouseDragged(MouseEvent e)
 				{
-				int mapH = parent.map.getHeight();
-				int mapW = parent.map.getWidth();
+				int mapH = parent.mapRattco.map.getHeight();
+				int mapW = parent.mapRattco.map.getWidth();
 				float fx = e.getX() / (float)getWidth();
 				float fy = e.getY() / (float)getHeight();
 				int x = (int)(fx * mapW);
 				int y = (int)(fy * mapH);
 
 				//On colorie
-				parent.map.setRGB(x, y, parent.currentColor.getRGB());
+				if (parent.mapRattco.map.getRGB(x, y) == Color.BLACK.getRGB() && parent.currentColor.getRGB() != Color.white.getRGB()) { return; }
+
+				parent.mapRattco.setRGBMap(x, y, parent.currentColor.getRGB());
 				repaint();
+				parent.frameTextureEditor.panelViewMap.repaint();
 				}
 			});
 		}
 
 	private void appearance()
 		{
-
+		setMinimumSize(new Dimension(300, 200));
 		}
 
 	/*------------------------------------------------------------------*\
@@ -131,5 +117,4 @@ public class JPanelViewMap extends JPanel
 
 	// Tools
 	JFrameMainWindow parent;
-	boolean pressed;
 	}

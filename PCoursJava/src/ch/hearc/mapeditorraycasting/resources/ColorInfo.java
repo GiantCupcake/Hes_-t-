@@ -3,52 +3,36 @@ package ch.hearc.mapeditorraycasting.resources;
 
 import java.awt.Color;
 
+/**
+ * Bête Structure de donnée permettant de lier les information d'un item
+ *
+ * @author maxpi
+ */
 public class ColorInfo
 	{
-
+	
 	/*------------------------------------------------------------------*\
 	|*							Constructeurs							*|
 	\*------------------------------------------------------------------*/
-
-	public ColorInfo(String name, Color color, String type, String description)
+	
+	public ColorInfo(String name, Color color, String description)
 		{
 		this.color = color;
+		this.name = name;
 		this.ressources = name;
-		this.type = type;
 		this.description = description;
 		}
-
-	/*------------------------------------------------------------------*\
-	|*							Methodes Public							*|
-	\*------------------------------------------------------------------*/
-
+		
 	@Override
 	public String toString()
 		{
 		StringBuilder builder = new StringBuilder();
-		builder.append(this.ressources);
+		builder.append(this.name);
 		return builder.toString();
 		}
-
-	/*------------------------------*\
-	|*				Set				*|
-	\*------------------------------*/
-
-	/*------------------------------*\
-	|*				Get				*|
-	\*------------------------------*/
-
-	/*------------------------------------------------------------------*\
-	|*							Methodes Private						*|
-	\*------------------------------------------------------------------*/
-
-	/*------------------------------------------------------------------*\
-	|*							Attributs Private						*|
-	\*------------------------------------------------------------------*/
-
+		
 	public Color color;
 	public String ressources;
-	public String type;
 	public String description;
- 	//private ActionScript script;
+	public String name;
 	}

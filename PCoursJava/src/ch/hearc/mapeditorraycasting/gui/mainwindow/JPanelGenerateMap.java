@@ -3,23 +3,32 @@ package ch.hearc.mapeditorraycasting.gui.mainwindow;
 
 import java.awt.AWTException;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
+import ch.hearc.mapeditorraycasting.LaunchLocalServerAndConnect;
 import ch.hearc.mapeditorraycasting.tools.DungeonBuilder;
-import ch.hearc.mapeditorraycasting.tools.ImageLoader;
 
+/**
+ * Interface de création de carte.
+ * Permet à l'utilisateur de changer les paramètres de génération de carte
+ * par l'algorithme.
+ *
+ * @author Maxime Piergiovanni
+ */
 public class JPanelGenerateMap extends Box
 	{
 
@@ -55,45 +64,76 @@ public class JPanelGenerateMap extends Box
 	private void geometry()
 		{
 		// JComponent : Instanciation
-		widthLabel = new JLabel("Width: ");
-		SpinnerNumberModel widthModel = new SpinnerNumberModel(120, 8, 1024, 1);
-		widthInput = new JSpinner(widthModel);
+		nameLabel = new JLabel("Level Name : ");
+		nameInput = new JTextField("FaqfinouLevel", 12);
+		nameInput.setMaximumSize(new Dimension(100, 20));
+		nameInput.setMinimumSize(new Dimension(100, 20));
+		nameBox = Box.createHorizontalBox();
 
+		widthLabel = new JLabel("Width: ");
+		SpinnerNumberModel widthModel = new SpinnerNumberModel(32, 8, 2048, 1);
+		widthInput = new JSpinner(widthModel);
+		widthInput.setMaximumSize(new Dimension(100, 20));
+		widthInput.setMinimumSize(new Dimension(100, 20));
 		widthBox = Box.createHorizontalBox();
 
 		heightLabel = new JLabel("Height: ");
-		SpinnerNumberModel heightModel = new SpinnerNumberModel(120, 8, 1024, 1);
+		SpinnerNumberModel heightModel = new SpinnerNumberModel(32, 8, 2048, 1);
 		heightInput = new JSpinner(heightModel);
 		heightBox = Box.createHorizontalBox();
+		heightInput.setMaximumSize(new Dimension(100, 20));
+		heightInput.setMinimumSize(new Dimension(100, 20));
 
-		fillLabel = new JLabel("Fill (%) : ");
-		SpinnerNumberModel fillModel = new SpinnerNumberModel(40, 0, 100, 1);
+		typeInput = new ButtonGroup();
+		typeEmpty = new JRadioButton("Empty");
+		typeDungeon = new JRadioButton("Dungeon");
+		typeInput.add(typeEmpty);
+		typeInput.add(typeDungeon);
+		typeDungeon.setSelected(true);
+		typeBox = new Box(BoxLayout.X_AXIS);
+
+		fillLabel = new JLabel("N° of items : ");
+		SpinnerNumberModel fillModel = new SpinnerNumberModel(8, 0, Integer.MAX_VALUE, 1);
 		fillInput = new JSpinner(fillModel);
 		fillBox = Box.createHorizontalBox();
+		fillInput.setMaximumSize(new Dimension(100, 20));
+		fillInput.setMinimumSize(new Dimension(100, 20));
 
 		saveButton = new JButton("Save");
 		loadButton = new JButton("Load");
 		generateButton = new JButton("Generate");
+		testButton = new JButton("Test");
 		buttonBox = Box.createHorizontalBox();
 
 		// JComponent : add
+		nameBox.add(nameLabel);
+		nameBox.add(Box.createHorizontalGlue());
+		nameBox.add(nameInput);
+
 		widthBox.add(widthLabel);
+		widthBox.add(Box.createHorizontalGlue());
 		widthBox.add(widthInput);
 
 		heightBox.add(heightLabel);
+		heightBox.add(Box.createHorizontalGlue());
 		heightBox.add(heightInput);
 
+		typeBox.add(typeEmpty);
+		typeBox.add(typeDungeon);
+
 		fillBox.add(fillLabel);
+		fillBox.add(Box.createHorizontalGlue());
 		fillBox.add(fillInput);
 
 		buttonBox.add(generateButton);
 		buttonBox.add(saveButton);
 		buttonBox.add(loadButton);
+		buttonBox.add(testButton);
 
+		add(nameBox);
 		add(widthBox);
-		add(Box.createVerticalGlue());
 		add(heightBox);
-		add(Box.createVerticalGlue());
+		add(typeBox);
 		add(fillBox);
 		add(Box.createVerticalGlue());
 		add(buttonBox);
@@ -107,8 +147,16 @@ public class JPanelGenerateMap extends Box
 			@Override
 			public void actionPerformed(ActionEvent e)
 				{
-				//Fonction de génération de map, puis on set la BufferedImage
-				generateRandom();
+				if (typeDungeon.isSelected())
+					{
+					generateDungeon();
+					}
+				else
+					{
+					int h = (Integer)heightInput.getValue();
+					int w = (Integer)widthInput.getValue();
+					parent.setMap(DungeonBuilder.generateVoid(w, h));
+					}
 				}
 
 			});
@@ -119,10 +167,9 @@ public class JPanelGenerateMap extends Box
 			@Override
 			public void actionPerformed(ActionEvent e)
 				{
-				//load un PNG dans la bufferedImage
 				try
 					{
-					loadFile();
+					loadDirectory();
 					}
 				catch (AWTException e1)
 					{
@@ -142,13 +189,25 @@ public class JPanelGenerateMap extends Box
 				// Sauvegarde du PNG
 				try
 					{
-					parent.writeFile("TestLevel");
+					parent.writeMapDirectory(nameInput.getText());
 					}
 				catch (IOException e1)
 					{
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 					}
+				}
+			});
+
+		testButton.addActionListener(new ActionListener()
+			{
+
+			@Override
+			public void actionPerformed(ActionEvent e)
+				{
+				saveButton.doClick();
+				LaunchLocalServerAndConnect.launch("maps/" + nameInput.getText());
+
 				}
 			});
 		}
@@ -158,63 +217,32 @@ public class JPanelGenerateMap extends Box
 		this.setBackground(Color.CYAN);
 		}
 
-	private void generateRandom()
+	/**
+	 * Génère un donjon d'une certaine taille et contenant un certain nombre de features
+	 * ici les features sont : soit une salle, soit un couloir.
+	 */
+	private void generateDungeon()
 		{
 		int h = (Integer)heightInput.getValue();
 		int w = (Integer)widthInput.getValue();
-		System.out.println(h);
-		System.out.println(w);
-		DungeonBuilder db = new DungeonBuilder(h, w, 1000);
+		int fill = (Integer)fillInput.getValue();
+		DungeonBuilder db = new DungeonBuilder(h, w, fill);
 		parent.setMap(db.getMap());
 		}
 
-	private void generateVoid(int h, int w)
-		{
-		BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		int x, y;
-
-		for(x = 0; x < w; x++)
-			{
-			for(y = 0; y < h; y++)
-				{
-				img.setRGB(x, y, Color.WHITE.getRGB());
-				}
-			}
-
-		for(x = 0, y = 0; x < w; x++)
-			{
-			img.setRGB(x, y, Color.BLACK.getRGB());
-			}
-		x = w - 1;
-		for(; y < h; y++)
-			{
-			img.setRGB(x, y, Color.BLACK.getRGB());
-			}
-		y = h - 1;
-		for(; x > 0; x--)
-			{
-			img.setRGB(x, y, Color.BLACK.getRGB());
-			}
-		for(; y > 0; y--)
-			{
-			img.setRGB(x, y, Color.BLACK.getRGB());
-			}
-
-		parent.setMap(img);
-		}
-
-	private void loadFile() throws AWTException
+	/**
+	 * On peut charger une image déjà existante
+	 */
+	private void loadDirectory() throws AWTException
 		{
 		final JFileChooser fc = new JFileChooser();
-		fc.setDialogTitle("Choisissez une carte, cliquez sur \"Annuler\" pour charger la map par défaut");
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("Map images", "png", "jpg", "gif");
-		fc.setFileFilter(filter);
+		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		fc.setDialogTitle("Choisissez une map");
 		int returnVal = fc.showOpenDialog(this);
 
 		if (returnVal == JFileChooser.APPROVE_OPTION)
 			{
-			BufferedImage img = ImageLoader.loadBufferedImage(fc.getSelectedFile().getAbsolutePath());
-			parent.setImage(img);
+			parent.ReadMapDirectory(fc.getSelectedFile().getAbsolutePath());
 			}
 		}
 
@@ -223,18 +251,31 @@ public class JPanelGenerateMap extends Box
 	\*------------------------------------------------------------------*/
 
 	// Tools
+	private JLabel nameLabel;
+	private JTextField nameInput;
+	private Box nameBox;
+
 	private JLabel widthLabel;
 	private JSpinner widthInput;
 	private Box widthBox;
+
 	private JLabel heightLabel;
 	private JSpinner heightInput;
 	private Box heightBox;
+
+	private ButtonGroup typeInput;
+	private JRadioButton typeEmpty;
+	private JRadioButton typeDungeon;
+	private Box typeBox;
+
 	private JLabel fillLabel;
 	private JSpinner fillInput;
 	private Box fillBox;
+
 	private JButton saveButton;
 	private JButton generateButton;
 	private JButton loadButton;
+	private JButton testButton;
 	private Box buttonBox;
 
 	private JFrameMainWindow parent;
